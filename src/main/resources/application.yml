@@ -1,0 +1,6 @@
+logging:
+  level:
+    org.springframework.web.client.RestTemplate: DEBUG
+    org.apache.http: DEBUG
+    level.httpclient.wire: DEBUG
+    org.springframework.web: DEBUG
