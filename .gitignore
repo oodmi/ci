@@ -1,4 +1,10 @@
 # Project exclude paths
+.idea
 /.gradle/
 /build/
 /build/classes/java/main/
+/lib/build/
+/lib/build/classes/java/main/
+/cli/build/
+/cli/build/classes/java/main/
+spring-shell.log

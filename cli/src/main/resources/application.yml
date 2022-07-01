@@ -1,0 +1,17 @@
+shell:
+  out:
+    info: CYAN
+    success: GREEN
+    warning: YELLOW
+    error: RED
+logging:
+  level:
+    org.oodmi.Application: ERROR
+spring:
+  main:
+    web-application-type: none
+
+lib:
+  token: token
+  name: oodmi
+  project: test-ci
