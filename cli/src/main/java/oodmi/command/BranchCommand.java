@@ -3,7 +3,7 @@ package oodmi.command;
 import lombok.SneakyThrows;
 import oodmi.shell.ShellHelper;
 import org.oodmi.client.BranchClient;
-import org.oodmi.model.branch.Branch;
+import org.oodmi.model.Branch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -30,7 +30,7 @@ public class BranchCommand {
 
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
         headers.put("name", "name");
-        headers.put("commit.sha", "commit");
+        headers.put("sha", "commit");
         TableModel model = new BeanListTableModel<>(branches, headers);
 
         TableBuilder tableBuilder = new TableBuilder(model);

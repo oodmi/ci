@@ -12,6 +12,6 @@ spring:
     web-application-type: none
 
 lib:
-  token: token
+  token: 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
   name: oodmi
   project: test-ci

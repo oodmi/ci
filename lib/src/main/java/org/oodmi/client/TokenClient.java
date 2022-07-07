@@ -2,17 +2,25 @@ package org.oodmi.client;
 
 import okhttp3.Request;
 import okhttp3.Response;
+import org.oodmi.model.GithubSettings;
 
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Client for operations with pul token.
+ * Client for operations with pull token.
  */
-public class TokenClient {
-    private final GitHubHttpExecutor gitHubHttpExecutor;
+public final class TokenClient {
+    private GitHubHttpExecutor gitHubHttpExecutor;
 
-    public TokenClient(String auth, String name, String project) {
-        this.gitHubHttpExecutor = new GitHubHttpExecutor(auth, name, project);
+    public TokenClient(GithubSettings properties) {
+        this.gitHubHttpExecutor = new GitHubHttpExecutor(properties);
+    }
+
+    TokenClient() {
+    }
+
+    void setGitHubHttpExecutor(GitHubHttpExecutor gitHubHttpExecutor) {
+        this.gitHubHttpExecutor = gitHubHttpExecutor;
     }
 
     /**
@@ -21,7 +29,7 @@ public class TokenClient {
      * @return true - valid, false - invalid
      */
     public CompletableFuture<Boolean> check() {
-        return gitHubHttpExecutor.newCall(new Request.Builder().get())
+        return gitHubHttpExecutor.newCall(new Request.Builder().get(), "")
                 .thenApply(Response::isSuccessful);
     }
 }

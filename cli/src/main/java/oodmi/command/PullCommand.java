@@ -4,10 +4,7 @@ import lombok.SneakyThrows;
 import oodmi.command.provider.StateValueProvider;
 import oodmi.shell.ShellHelper;
 import org.oodmi.client.PullRequestClient;
-import org.oodmi.enums.State;
-import org.oodmi.model.commit.Commit;
-import org.oodmi.model.pull.PullRequest;
-import org.oodmi.model.request.OpenPullRequest;
+import org.oodmi.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
@@ -35,9 +32,14 @@ public class PullCommand {
     @ShellMethod(value = "Get pull list", key = "pull list")
     public void getPulls(@ShellOption(defaultValue = NULL) Integer page,
                          @ShellOption(defaultValue = NULL) String author,
-                         @ShellOption(defaultValue = NULL) String branch,
-                         @ShellOption(defaultValue = NULL, valueProvider = StateValueProvider.class) State state) {
-        Collection<PullRequest> pullRequests = pullRequestClient.getPulls(page, state, author, branch).get();
+                         @ShellOption(defaultValue = NULL) String into,
+                         @ShellOption(defaultValue = NULL) String from,
+                         @ShellOption(defaultValue = NULL, valueProvider = StateValueProvider.class) PullState state) {
+        PullRequestFilter pullRequestFilter = new PullRequestFilter()
+                .byState(state)
+                .byIntoBranch(into)
+                .byFromBranchAndAuthor(from, author);
+        Collection<PullRequest> pullRequests = pullRequestClient.getPullRequests(page, pullRequestFilter).get();
 
         printPullRequestTable(pullRequests);
     }
@@ -49,12 +51,12 @@ public class PullCommand {
                          @ShellOption String title,
                          @ShellOption(defaultValue = NULL) String body) {
         OpenPullRequest request = new OpenPullRequest()
-                .setBase(into)
-                .setHead(from)
+                .setInto(into)
+                .setFrom(from)
                 .setTitle(title)
                 .setBody(body);
 
-        PullRequest pullRequest = pullRequestClient.openPull(request).get();
+        PullRequest pullRequest = pullRequestClient.openPullRequest(request).get();
 
         printPullRequestTable(List.of(pullRequest));
     }
@@ -62,7 +64,7 @@ public class PullCommand {
     @SneakyThrows
     @ShellMethod(value = "Merge pull", key = "pull merge")
     public void mergePull(Integer number) {
-        pullRequestClient.mergePull(number).get();
+        pullRequestClient.mergePullRequest(number).get();
 
         shellHelper.printSuccess("Pull request with number " + number + " successfully merged!");
     }
@@ -70,7 +72,7 @@ public class PullCommand {
     @SneakyThrows
     @ShellMethod(value = "Close pull", key = "pull close")
     public void closePull(Integer number) {
-        PullRequest pullRequest = pullRequestClient.closePull(number).get();
+        PullRequest pullRequest = pullRequestClient.closePullRequest(number).get();
 
         shellHelper.printSuccess("Pull request with number " + number + " successfully closed!");
 
@@ -80,7 +82,7 @@ public class PullCommand {
     @SneakyThrows
     @ShellMethod(value = "Reopen pull", key = "pull reopen")
     public void reopenPull(Integer number) {
-        PullRequest pullRequest = pullRequestClient.reopenPull(number).get();
+        PullRequest pullRequest = pullRequestClient.reopenPullRequest(number).get();
 
         shellHelper.printSuccess("Pull request with number " + number + " successfully reopened!");
 
@@ -90,18 +92,21 @@ public class PullCommand {
     @SneakyThrows
     @ShellMethod(value = "Reopen pull", key = "pull commits")
     public void getPullCommits(Integer number) {
-        Collection<Commit> commits = pullRequestClient.getPullCommits(number).get();
-
-        printCommitTable(commits);
+        try{
+            Collection<Commit> commits = pullRequestClient.getPullRequestCommits(number).get();
+            printCommitTable(commits);
+        }catch (IllegalArgumentException e) {
+            shellHelper.printError(e.getMessage());
+        }
     }
 
     private void printCommitTable(Collection<Commit> commits) {
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
         headers.put("sha", "sha");
-        headers.put("commit.message", "message");
-        headers.put("commit.author.date", "date");
-        headers.put("commit.author.name", "author");
-        headers.put("commit.author.email", "email");
+        headers.put("message", "message");
+        headers.put("date", "date");
+        headers.put("author", "author");
+        headers.put("email", "email");
         TableModel model = new BeanListTableModel<>(commits, headers);
 
         TableBuilder tableBuilder = new TableBuilder(model);
@@ -114,13 +119,13 @@ public class PullCommand {
         LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
         headers.put("number", "number");
         headers.put("state", "state");
-        headers.put("user.login", "login");
-        headers.put("user.name", "name");
-        headers.put("user.email", "email");
-        headers.put("base.ref", "into");
-        headers.put("head.ref", "from");
+        headers.put("login", "login");
+        headers.put("name", "name");
+        headers.put("email", "email");
+        headers.put("into", "into");
+        headers.put("from", "from");
         headers.put("title", "title");
-        headers.put("body", "summary");
+        headers.put("summary", "summary");
         TableModel model = new BeanListTableModel<>(pullRequests, headers);
 
         TableBuilder tableBuilder = new TableBuilder(model);

@@ -2,22 +2,30 @@ package org.oodmi.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import okhttp3.Request;
-import org.oodmi.model.branch.Branch;
+import org.oodmi.model.Branch;
+import org.oodmi.model.GithubSettings;
+import org.oodmi.model.external.branch.BranchExternal;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
-
-import static org.oodmi.client.ConstantHolder.objectJsonMapper;
+import java.util.stream.Collectors;
 
 /**
- * Client for operations with pul branches.
+ * Client for operations with pull branches.
  */
-public class BranchClient {
+public final class BranchClient {
 
-    private final GitHubHttpExecutor gitHubHttpExecutor;
+    private GitHubHttpExecutor gitHubHttpExecutor;
 
-    public BranchClient(String auth, String name, String project) {
-        this.gitHubHttpExecutor = new GitHubHttpExecutor(auth, name, project);
+    public BranchClient(GithubSettings properties) {
+        this.gitHubHttpExecutor = new GitHubHttpExecutor(properties);
+    }
+
+    BranchClient() {
+    }
+
+    void setGitHubHttpExecutor(GitHubHttpExecutor gitHubHttpExecutor) {
+        this.gitHubHttpExecutor = gitHubHttpExecutor;
     }
 
     /**
@@ -27,7 +35,8 @@ public class BranchClient {
      */
     public CompletableFuture<Collection<Branch>> getBranches() {
         return gitHubHttpExecutor.newCall(new Request.Builder().get(), "/branches")
-                .thenApply(response -> objectJsonMapper.toObject(response, new TypeReference<>() {
-                }));
+                .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<Collection<BranchExternal>>() {
+                }))
+                .thenApply(list -> list.stream().map(BranchExternal::map).collect(Collectors.toList()));
     }
 }

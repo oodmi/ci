@@ -1,6 +1,6 @@
 package oodmi.command.provider;
 
-import org.oodmi.enums.State;
+import org.oodmi.model.PullState;
 import org.springframework.core.MethodParameter;
 import org.springframework.shell.CompletionContext;
 import org.springframework.shell.CompletionProposal;
@@ -19,7 +19,7 @@ public class StateValueProvider extends EnumValueProvider {
 
     @Override
     public List<CompletionProposal> complete(MethodParameter parameter, CompletionContext completionContext, String[] hints) {
-        return Arrays.stream(State.values())
+        return Arrays.stream(PullState.values())
                 .map(state -> new CompletionProposal(state.name()))
                 .collect(Collectors.toList());
 

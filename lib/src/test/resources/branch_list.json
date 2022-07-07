@@ -1,0 +1,53 @@
+[
+  {
+    "name": "feature/1",
+    "commit": {
+      "sha": "8d9813a5869c52e11dc358d52484e4941863bebc",
+      "url": "https://api.github.com/repos/oodmi/test-ci/commits/8d9813a5869c52e11dc358d52484e4941863bebc"
+    },
+    "protected": false,
+    "protection": {
+      "enabled": false,
+      "required_status_checks": {
+        "enforcement_level": "off",
+        "contexts": [],
+        "checks": []
+      }
+    },
+    "protection_url": "https://api.github.com/repos/oodmi/test-ci/branches/feature/1/protection"
+  },
+  {
+    "name": "feature/2",
+    "commit": {
+      "sha": "39aa87811288658a1592022336856506a663c8fa",
+      "url": "https://api.github.com/repos/oodmi/test-ci/commits/39aa87811288658a1592022336856506a663c8fa"
+    },
+    "protected": false,
+    "protection": {
+      "enabled": false,
+      "required_status_checks": {
+        "enforcement_level": "off",
+        "contexts": [],
+        "checks": []
+      }
+    },
+    "protection_url": "https://api.github.com/repos/oodmi/test-ci/branches/feature/2/protection"
+  },
+  {
+    "name": "main",
+    "commit": {
+      "sha": "3d359d56a2e068cf16ff9f6bde6aa8a7bab4c5a3",
+      "url": "https://api.github.com/repos/oodmi/test-ci/commits/3d359d56a2e068cf16ff9f6bde6aa8a7bab4c5a3"
+    },
+    "protected": false,
+    "protection": {
+      "enabled": false,
+      "required_status_checks": {
+        "enforcement_level": "off",
+        "contexts": [],
+        "checks": []
+      }
+    },
+    "protection_url": "https://api.github.com/repos/oodmi/test-ci/branches/main/protection"
+  }
+]
