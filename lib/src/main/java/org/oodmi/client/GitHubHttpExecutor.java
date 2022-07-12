@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-
 public final class GitHubHttpExecutor {
 
     private final OkHttpClient client;
@@ -37,8 +36,6 @@ public final class GitHubHttpExecutor {
                 .connectTimeout(20, TimeUnit.SECONDS)
                 .addInterceptor(new RequestHeadersNetworkInterceptor(properties.token()))
                 .addInterceptor(new RetryInterceptor(properties.retryLimit()))
-//                .addInterceptor(new RetryOnRateLimitInterceptor())
-//                .connectionPool()
                 .retryOnConnectionFailure(true)
                 .build();
     }

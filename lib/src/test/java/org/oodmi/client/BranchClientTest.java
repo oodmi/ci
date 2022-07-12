@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.oodmi.exceptions.GithubException;
 import org.oodmi.model.Branch;
-import org.oodmi.model.ExecutorSettings;
 import org.oodmi.model.GithubSettings;
 
 import java.io.IOException;
@@ -96,13 +95,6 @@ public class BranchClientTest {
         server.start();
 
         branchClient.setGitHubHttpExecutor(new GitHubHttpExecutor(properties,
-                new ExecutorSettings(
-                        10,
-                        1000,
-                        60,
-                        10000,
-                        100,
-                        10),
                 server.getHostName(),
                 server.getPort()));
 
