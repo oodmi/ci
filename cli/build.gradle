@@ -11,11 +11,14 @@ version '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
+java{
+    sourceCompatibility = 17
+    targetCompatibility = 17
+}
 
 dependencies {
     implementation project(path: ':lib', configuration: 'default')
 
-    implementation platform('org.springframework.boot:spring-boot-dependencies:2.6.4')
     implementation 'org.springframework.shell:spring-shell-starter:2.0.1.RELEASE'
 
 

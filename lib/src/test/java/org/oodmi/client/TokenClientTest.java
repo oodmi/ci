@@ -4,22 +4,12 @@ import okhttp3.mockwebserver.Dispatcher;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
-import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.oodmi.client.GitHubHttpExecutor;
-import org.oodmi.client.TokenClient;
-import org.oodmi.exceptions.GithubException;
 import org.oodmi.model.GithubSettings;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TokenClientTest {
     static TokenClient tokenClient;

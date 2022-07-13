@@ -8,8 +8,6 @@ import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.oodmi.client.GitHubHttpExecutor;
-import org.oodmi.client.PullRequestClient;
 import org.oodmi.model.Commit;
 import org.oodmi.model.GithubSettings;
 import org.oodmi.model.OpenPullRequest;
@@ -23,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PullRequestClientTest {
     static PullRequestClient pullRequestClient;

@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
  */
 public final class PullRequestClient {
 
+    static final String JSON_HEADER = "application/json; charset=utf-8";
+
     private GitHubHttpExecutor gitHubHttpExecutor;
 
     public PullRequestClient(GithubSettings properties) {
@@ -89,7 +91,7 @@ public final class PullRequestClient {
                 .setBody(request.getBody())
                 .setTitle(request.getTitle());
 
-        RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), ObjectJsonMapper.getInstance().toJson(openPullRequest));
+        RequestBody body = RequestBody.create(MediaType.get(JSON_HEADER), ObjectJsonMapper.getInstance().toJson(openPullRequest));
 
         return gitHubHttpExecutor.newCall(new Request.Builder().post(body), "/pulls")
                 .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<PullRequestExternal>() {
@@ -117,7 +119,7 @@ public final class PullRequestClient {
      * @return true - if merged, false - if not
      */
     public CompletableFuture<Boolean> mergePullRequest(@NotNull Integer number) {
-        RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), "");
+        RequestBody body = RequestBody.create(MediaType.get(JSON_HEADER), "");
 
         return gitHubHttpExecutor.newCall(new Request.Builder().put(body), String.format("/pulls/%s/merge", number))
                 .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<MergeResponseExternal>() {
@@ -145,7 +147,7 @@ public final class PullRequestClient {
     }
 
     private CompletableFuture<PullRequest> managePullRequest(Integer number, PullStateExternal state) {
-        RequestBody body = RequestBody.create(MediaType.get("application/json; charset=utf-8"), ObjectJsonMapper.getInstance().toJson(state));
+        RequestBody body = RequestBody.create(MediaType.get(JSON_HEADER), ObjectJsonMapper.getInstance().toJson(state));
 
         return gitHubHttpExecutor.newCall(new Request.Builder().patch(body), String.format("/pulls/%s", number))
                 .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<PullRequestExternal>() {

@@ -7,11 +7,14 @@ import org.oodmi.exceptions.GithubException;
 import org.oodmi.interseptor.RequestHeadersNetworkInterceptor;
 import org.oodmi.interseptor.RetryInterceptor;
 import org.oodmi.model.GithubSettings;
+import org.oodmi.model.external.DetailsMessageExternal;
+import org.oodmi.model.external.ErrorResponseExternal;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public final class GitHubHttpExecutor {
 
@@ -55,17 +58,25 @@ public final class GitHubHttpExecutor {
                 if (response.isSuccessful()) {
                     result.complete(response);
                 } else {
-                    HashMap<String, String> res = ObjectJsonMapper.getInstance().toObject(response, new TypeReference<>() {
+                    ErrorResponseExternal res = ObjectJsonMapper.getInstance().toObject(response, new TypeReference<>() {
                     });
 
-                    result.completeExceptionally(new GithubException(
-                            response.code(),
-                            res.get("message"),
-                            res.get("documentation_url"))
-                    );
+                    result.completeExceptionally(buildException(res, response.code()));
                 }
             }
         });
         return result;
+    }
+
+    private GithubException buildException(ErrorResponseExternal response, Integer code) {
+        List<String> details = response.getErrors().stream()
+                .map(DetailsMessageExternal::getMessage)
+                .collect(Collectors.toList());
+
+        return new GithubException(
+                code,
+                response.getMessage(),
+                response.getDocumentationUrl(),
+                details);
     }
 }

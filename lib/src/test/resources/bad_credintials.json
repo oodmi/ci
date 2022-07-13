@@ -1,4 +1,12 @@
 {
   "message": "Bad credentials",
-  "documentation_url": "https://docs.github.com/rest"
+  "documentation_url": "https://docs.github.com/rest",
+  "errors": [
+    {
+      "resource": "Branch",
+      "code": "custom",
+      "field": "none",
+      "message": "Something wrong"
+    }
+  ]
 }
