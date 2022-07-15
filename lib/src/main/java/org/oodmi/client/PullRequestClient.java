@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,7 +32,7 @@ import java.util.stream.Collectors;
 public final class PullRequestClient {
 
     static final String JSON_HEADER = "application/json; charset=utf-8";
-
+    private final PullRequestClient _this = this;
     private GitHubHttpExecutor gitHubHttpExecutor;
 
     public PullRequestClient(GithubSettings properties) {
@@ -55,23 +56,61 @@ public final class PullRequestClient {
     public CompletableFuture<Collection<PullRequest>> getPullRequests(@Nullable Integer page,
                                                                       @Nullable Integer perPage,
                                                                       @Nullable PullRequestFilter filter) {
-        page = page == null ? 1 : page;
-        perPage = perPage == null ? 5 : perPage;
+        page = (page == null || page < 0) ? 1 : page;
+        perPage = (perPage == null || perPage < 0) ? 5 : perPage;
 
+        CompletableFuture<PullRequestPage> future = this.getPullRequestPage(perPage, filter);
+        while (page > 1) {
+            future = future.thenCompose(PullRequestPage::nextPage);
+            page--;
+        }
+
+        return future.thenApply(PullRequestPage::get);
+    }
+
+    /**
+     * Retrieves page of pull requests
+     *
+     * @param perPage default 5
+     * @param filter  filter for getting pull request
+     * @return page
+     */
+    public CompletableFuture<PullRequestPage> getPullRequestPage(@Nullable Integer perPage,
+                                                                 @Nullable PullRequestFilter filter) {
+        return getPullRequestPage(perPage, null, filter);
+    }
+
+    CompletableFuture<PullRequestPage> getPullRequestPage(@Nullable Integer perPage,
+                                                          @Nullable String cursor,
+                                                          @Nullable PullRequestFilter filter) {
+        Integer checkedPerPage = (perPage == null || perPage < 0) ? 5 : perPage;
         String searchQuery = buildSearchQuery(filter);
 
         String search = readStringFromFile(getClass(), "/graphql/search.txt");
 
         search = search.replace("{query}", searchQuery)
-                .replace("{after}", "")
-                .replace("{perPage}", perPage.toString());
+                .replace("{perPage}", checkedPerPage.toString());
+
+        if (cursor == null) {
+            search = search.replace("{after}", "");
+        } else {
+            search = search.replace("{after}", "after: \"" + cursor + "\"\n");
+        }
 
         String request = ObjectJsonMapper.getInstance().toJson(new GraphqlRequestExternal()
                 .setQuery(search));
 
         return gitHubHttpExecutor.newGraphqlCall(request)
-                .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<GraphqlExternal>() {
-                }).map());
+                .thenApply(response -> getPullRequestPage(filter, checkedPerPage, response));
+    }
+
+    private PullRequestPageImpl getPullRequestPage(@Nullable PullRequestFilter filter,
+                                                   Integer checkedPerPage,
+                                                   Response response) {
+        GraphqlExternal graphqlExternal = ObjectJsonMapper.getInstance().toObject(response, new TypeReference<>() {
+        });
+        String endCursor = graphqlExternal.getData().getSearch().getPageInfo().getEndCursor();
+        return new PullRequestPageImpl(checkedPerPage, endCursor, graphqlExternal.map(), filter, _this);
     }
 
     @NotNull
