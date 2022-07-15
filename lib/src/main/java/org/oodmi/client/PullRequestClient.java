@@ -4,16 +4,23 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.oodmi.model.*;
+import org.oodmi.model.external.GraphqlRequestExternal;
 import org.oodmi.model.external.commit.CommitExternal;
+import org.oodmi.model.external.graphql.GraphqlExternal;
 import org.oodmi.model.external.pull.PullRequestExternal;
 import org.oodmi.model.external.pull.PullStateExternal;
 import org.oodmi.model.external.request.OpenPullRequestExternal;
 import org.oodmi.model.external.response.MergeResponseExternal;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -46,33 +53,53 @@ public final class PullRequestClient {
      * @return list of pull requests
      */
     public CompletableFuture<Collection<PullRequest>> getPullRequests(@Nullable Integer page,
+                                                                      @Nullable Integer perPage,
                                                                       @Nullable PullRequestFilter filter) {
-        String url = getUrl(page, filter);
+        page = page == null ? 1 : page;
+        perPage = perPage == null ? 5 : perPage;
 
-        return gitHubHttpExecutor.newCall(new Request.Builder().get(), url)
-                .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<Collection<PullRequestExternal>>() {
-                }))
-                .thenApply(list -> list.stream().map(PullRequestExternal::map).collect(Collectors.toList()));
+        String searchQuery = buildSearchQuery(filter);
+
+        String search = readStringFromFile(getClass(), "/graphql/search.txt");
+
+        search = search.replace("{query}", searchQuery)
+                .replace("{after}", "")
+                .replace("{perPage}", perPage.toString());
+
+        String request = ObjectJsonMapper.getInstance().toJson(new GraphqlRequestExternal()
+                .setQuery(search));
+
+        return gitHubHttpExecutor.newGraphqlCall(request)
+                .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<GraphqlExternal>() {
+                }).map());
     }
 
     @NotNull
-    private String getUrl(@Nullable Integer page, @Nullable PullRequestFilter filter) {
+    private String buildSearchQuery(@Nullable PullRequestFilter filter) {
         StringBuilder builder = new StringBuilder();
-        page = page == null ? 1 : page;
-        builder.append("/pulls?page=").append(page);
+        builder.append("is:pr")
+                .append(" repo:{repo}");
 
         if (filter != null) {
             if (filter.getState() != null) {
-                builder.append("&state=");
-                builder.append(filter.getState());
+                switch (filter.getState()) {
+                    case closed -> builder.append(" is:closed");
+                    case opened -> builder.append(" is:open");
+                }
+            } else {
+                builder.append(" is:open");
             }
             if (filter.getInto() != null) {
-                builder.append("&base=");
+                builder.append(" base:");
                 builder.append(filter.getInto());
             }
-            if (filter.getAuthor() != null && filter.getFrom() != null) {
-                builder.append("&head=");
-                builder.append(filter.getAuthor()).append(":").append(filter.getFrom());
+            if (filter.getAuthor() != null) {
+                builder.append(" author:");
+                builder.append(filter.getAuthor());
+            }
+            if (filter.getFrom() != null) {
+                builder.append(" head:");
+                builder.append(filter.getFrom());
             }
         }
         return builder.toString();
@@ -153,5 +180,13 @@ public final class PullRequestClient {
                 .thenApply(response -> ObjectJsonMapper.getInstance().toObject(response, new TypeReference<PullRequestExternal>() {
                 }))
                 .thenApply(PullRequestExternal::map);
+    }
+
+    public String readStringFromFile(Class<?> clazz, String path) {
+        try {
+            return IOUtils.toString(Objects.requireNonNull(clazz.getResourceAsStream(path)), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(MessageFormat.format("Error reading file {0}", path));
+        }
     }
 }

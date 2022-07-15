@@ -1,0 +1,39 @@
+query {
+  search(
+    query: "{query}"
+    type: ISSUE
+    first: {perPage}
+    {after}
+  ) {
+    issueCount
+    edges {
+      node {
+        ... on PullRequest {
+          number
+          state
+          title
+          body
+          createdAt
+          updatedAt
+          author {
+            login
+            ... on User {
+              login
+              email
+              name
+            }
+          }
+          headRefName
+          baseRefName
+        }
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+      startCursor
+      hasPreviousPage
+    }
+  }
+}

@@ -18,20 +18,23 @@ import java.util.stream.Collectors;
 
 public final class GitHubHttpExecutor {
 
+    private final String graphqlBasePath;
     private final OkHttpClient client;
     private final String basePath;
-    private String host;
-    private String port;
+    private final String repository;
 
     public GitHubHttpExecutor(GithubSettings properties) {
         this(properties, null, null);
     }
 
     GitHubHttpExecutor(GithubSettings properties, String host, Integer port) {
+        this.repository = properties.name() + "/" + properties.project();
         if (host != null && port != null) {
-            this.basePath = "http://" + host + ":" + port + "/" + properties.name() + "/" + properties.project();
+            this.basePath = "http://" + host + ":" + port + "/" + this.repository;
+            this.graphqlBasePath = "http://" + host + ":" + port;
         } else {
-            this.basePath = "https://api.github.com/repos/" + properties.name() + "/" + properties.project();
+            this.basePath = "https://api.github.com/repos/" + this.repository;
+            this.graphqlBasePath = "https://api.github.com/graphql";
         }
         this.client = new OkHttpClient()
                 .newBuilder()
@@ -46,6 +49,20 @@ public final class GitHubHttpExecutor {
     CompletableFuture<Response> newCall(@NotNull Request.Builder requestBuilder, @NotNull String relativePath) {
         requestBuilder.url(basePath + relativePath);
         Request request = requestBuilder.build();
+        return process(request);
+    }
+
+    CompletableFuture<Response> newGraphqlCall(String search) {
+        search = search.replace("{repo}", repository);
+        RequestBody body = RequestBody.create(MediaType.get("text/plain"), search);
+        Request request = new Request.Builder()
+                .post(body)
+                .url(graphqlBasePath)
+                .build();
+        return process(request);
+    }
+
+    private CompletableFuture<Response> process(Request request) {
         CompletableFuture<Response> result = new CompletableFuture<>();
         client.newCall(request).enqueue(new Callback() {
             @Override

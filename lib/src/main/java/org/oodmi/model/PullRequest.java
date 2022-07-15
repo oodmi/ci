@@ -1,7 +1,6 @@
 package org.oodmi.model;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -49,22 +48,22 @@ public final class PullRequest {
         return this;
     }
 
-    @Nullable
+    @NotNull
     public String getName() {
         return name;
     }
 
-    public PullRequest setName(@Nullable String name) {
+    public PullRequest setName(@NotNull String name) {
         this.name = name;
         return this;
     }
 
-    @Nullable
+    @NotNull
     public String getEmail() {
         return email;
     }
 
-    public PullRequest setEmail(@Nullable String email) {
+    public PullRequest setEmail(@NotNull String email) {
         this.email = email;
         return this;
     }
@@ -99,12 +98,12 @@ public final class PullRequest {
         return this;
     }
 
-    @Nullable
+    @NotNull
     public String getSummary() {
         return summary;
     }
 
-    public PullRequest setSummary(@Nullable String summary) {
+    public PullRequest setSummary(@NotNull String summary) {
         this.summary = summary;
         return this;
     }

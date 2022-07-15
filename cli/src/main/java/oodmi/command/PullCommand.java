@@ -31,6 +31,7 @@ public class PullCommand {
     @SneakyThrows
     @ShellMethod(value = "Get pull list", key = "pull list")
     public void getPulls(@ShellOption(defaultValue = NULL) Integer page,
+                         @ShellOption(defaultValue = NULL) Integer perPage,
                          @ShellOption(defaultValue = NULL) String author,
                          @ShellOption(defaultValue = NULL) String into,
                          @ShellOption(defaultValue = NULL) String from,
@@ -39,7 +40,7 @@ public class PullCommand {
                 .byState(state)
                 .byIntoBranch(into)
                 .byFromBranchAndAuthor(from, author);
-        Collection<PullRequest> pullRequests = pullRequestClient.getPullRequests(page, pullRequestFilter).get();
+        Collection<PullRequest> pullRequests = pullRequestClient.getPullRequests(page, perPage, pullRequestFilter).get();
 
         printPullRequestTable(pullRequests);
     }
@@ -92,10 +93,10 @@ public class PullCommand {
     @SneakyThrows
     @ShellMethod(value = "Reopen pull", key = "pull commits")
     public void getPullCommits(Integer number) {
-        try{
+        try {
             Collection<Commit> commits = pullRequestClient.getPullRequestCommits(number).get();
             printCommitTable(commits);
-        }catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             shellHelper.printError(e.getMessage());
         }
     }

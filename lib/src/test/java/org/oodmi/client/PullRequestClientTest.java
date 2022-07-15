@@ -40,9 +40,9 @@ public class PullRequestClientTest {
         Collection<PullRequest> expected =
                 List.of(
                         new PullRequest()
-                                .setName(null)
+                                .setName("Alexandr")
                                 .setLogin("PakhomovAlexander")
-                                .setEmail(null)
+                                .setEmail("apkhmv@gmail.com")
                                 .setState("open")
                                 .setTitle("Update README.md")
                                 .setCreatedAt(LocalDateTime.of(2022, 7, 6, 14, 30, 7))
@@ -50,11 +50,11 @@ public class PullRequestClientTest {
                                 .setInto("main")
                                 .setFrom("pr-1")
                                 .setNumber(15L)
-                                .setSummary(null),
+                                .setSummary(""),
                         new PullRequest()
-                                .setName(null)
+                                .setName("Dmitry")
                                 .setLogin("oodmi")
-                                .setEmail(null)
+                                .setEmail("")
                                 .setState("open")
                                 .setTitle("123")
                                 .setCreatedAt(LocalDateTime.of(2022, 7, 6, 9, 13, 46))
@@ -62,14 +62,14 @@ public class PullRequestClientTest {
                                 .setInto("feature/4")
                                 .setFrom("feature/6")
                                 .setNumber(14L)
-                                .setSummary(null)
+                                .setSummary("")
                 );
 
         Dispatcher dispatcher = new Dispatcher() {
             @NotNull
             @Override
             public MockResponse dispatch(RecordedRequest request) {
-                if ("/name/project/pulls?page=1".equals(request.getPath())) {
+                if ("/".equals(request.getPath())) {
                     return new MockResponse()
                             .setResponseCode(200)
                             .setBody(pullRequestListResponse)
@@ -87,14 +87,14 @@ public class PullRequestClientTest {
 
         pullRequestClient.setGitHubHttpExecutor(new GitHubHttpExecutor(properties, server.getHostName(), server.getPort()));
 
-        Collection<PullRequest> pullRequests = pullRequestClient.getPullRequests(null, null).get();
+        Collection<PullRequest> pullRequests = pullRequestClient.getPullRequests(null, null, null).get();
 
         assertEquals(2, pullRequests.size());
         assertEquals(expected, pullRequests);
 
         RecordedRequest recordedRequest = server.takeRequest();
-        assertEquals("GET", recordedRequest.getMethod());
-        assertEquals(server.url("/name/project/pulls?page=1"), recordedRequest.getRequestUrl());
+        assertEquals("POST", recordedRequest.getMethod());
+        assertEquals(server.url("/"), recordedRequest.getRequestUrl());
         server.close();
     }
 
