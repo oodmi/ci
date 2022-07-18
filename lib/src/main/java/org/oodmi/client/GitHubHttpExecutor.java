@@ -23,7 +23,7 @@ public final class GitHubHttpExecutor {
     private final String basePath;
     private final String repository;
 
-    public GitHubHttpExecutor(GithubSettings properties) {
+    GitHubHttpExecutor(GithubSettings properties) {
         this(properties, null, null);
     }
 

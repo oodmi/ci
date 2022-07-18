@@ -110,7 +110,8 @@ public final class PullRequestClient {
         GraphqlExternal graphqlExternal = ObjectJsonMapper.getInstance().toObject(response, new TypeReference<>() {
         });
         String endCursor = graphqlExternal.getData().getSearch().getPageInfo().getEndCursor();
-        return new PullRequestPageImpl(checkedPerPage, endCursor, graphqlExternal.map(), filter, _this);
+        Boolean hasNextPage = graphqlExternal.getData().getSearch().getPageInfo().getHasNextPage();
+        return new PullRequestPageImpl(checkedPerPage, endCursor, hasNextPage, graphqlExternal.map(), filter, _this);
     }
 
     @NotNull
